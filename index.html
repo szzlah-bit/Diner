@@ -21,8 +21,8 @@ const firebaseConfig={
  measurementId:'G-X99H6HSN8E'
 };
 const DINNER_ID='dineravond';
-// Vul hier de UID van het Firebase-organisatoraccount in (Authentication > Users).
-const ADMIN_UID='VUL_HIER_DE_ORGANISATOR_UID_IN';
+// HkB2N5CJXZOtv9BIRoaCrV3Eh9k1 (Authentication > Users).
+const ADMIN_UID='HkB2N5CJXZOtv9BIRoaCrV3Eh9k1';
 const $=id=>document.getElementById(id);let S={names:[],courses:6,plans:[],step:0,teams:[],teamHistory:{},round:0,couples:[]},ratings={},ready=false,db,ref,auth,admin=false;
 function message(id,t,err=false){$(id).textContent=t;$(id).className=err?'error':'ok'}function status(t,err=false){$('connection').textContent=t;$('connection').style.background=err?'#ffe0db':'#e4f3e5'}function enabled(b){ready=b;document.querySelectorAll('.write').forEach(x=>x.disabled=!b);document.querySelectorAll('#setup .write,#resetScores').forEach(x=>x.disabled=!b||!admin);drawTable()}enabled(false);
 function names(){let a=$('names').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);if(a.length!==12||new Set(a.map(x=>x.toLowerCase())).size!==12)throw Error('Voer precies 12 verschillende namen in.');return a}async function updateState(patch){if(!ready)throw Error('Geen databaseverbinding.');await updateDoc(ref,patch)}
