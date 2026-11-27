@@ -1,27 +1,49 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    // Vervang deze tekst door de UID van het organisatoraccount uit Firebase Authentication.
-    function organizer() { return signedIn() && request.auth.uid == 'HkB2N5CJXZOtv9BIRoaCrV3Eh9k1'; }
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function organizer() {
+      return signedIn()
+        && request.auth.uid == 'HkB2N5CJXZOtv9BIRoaCrV3Eh9k1';
+    }
 
     match /dinners/{dinnerId} {
+      // Gasten mogen de tafelschikking, teams en gerechten bekijken.
       allow read: if signedIn();
+
+      // Alleen de organisator mag Setup wijzigen.
       allow create, update, delete: if organizer();
 
       match /ratings/{ratingId} {
+        // Alle aangemelde gasten mogen de ranglijst bekijken.
         allow read: if signedIn();
+
+        // Gasten kunnen cijfers invoeren en aanpassen.
+        // Let op: zonder koppeling van een gastaccount aan een stel
+        // kunnen zij ook cijfers namens een ander stel wijzigen.
         allow create, update: if signedIn()
           && request.resource.data.keys().hasOnly(['dish', 'rater', 'score'])
           && request.resource.data.keys().hasAll(['dish', 'rater', 'score'])
           && request.resource.data.dish is int
+          && request.resource.data.dish >= 0
+          && request.resource.data.dish < 6
           && request.resource.data.rater is int
-          && request.resource.data.score is int
-          && request.resource.data.dish >= 0 && request.resource.data.dish < 6
-          && request.resource.data.rater >= 0 && request.resource.data.rater < 6
+          && request.resource.data.rater >= 0
+          && request.resource.data.rater < 6
           && request.resource.data.dish != request.resource.data.rater
-          && request.resource.data.score >= 1 && request.resource.data.score <= 10
-          && ratingId == (string(request.resource.data.dish) + '_' + string(request.resource.data.rater));
+          && request.resource.data.score is int
+          && request.resource.data.score >= 1
+          && request.resource.data.score <= 10
+          && ratingId == (
+            string(request.resource.data.dish) + '_' +
+            string(request.resource.data.rater)
+          );
+
+        // Alleen de organisator kan de ranglijst resetten.
         allow delete: if organizer();
       }
     }
